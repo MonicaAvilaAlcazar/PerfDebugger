@@ -119,7 +119,7 @@ Certify: "I do not collect user data."
 
 ## Privacy Policy URL
 
-Host [PRIVACY_POLICY.md](PRIVACY_POLICY.md) publicly (GitHub Pages / Notion / Google Sites — see Step 2 of [PUBLISHING_GUIDE.md](PUBLISHING_GUIDE.md)) and paste that URL here.
+[PRIVACY_POLICY.md](PRIVACY_POLICY.md) is mirrored on the personal site at https://monydevelop.me/ — paste the published URL (e.g. `https://monydevelop.me/projects/perf-debugger/privacy-policy`) here. See Step 2 of [PUBLISHING_GUIDE.md](PUBLISHING_GUIDE.md) for the workflow.
 
 ---
 

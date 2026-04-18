@@ -33,15 +33,15 @@ Work top-to-bottom. Don't skip — each step unlocks the next.
 
 ## Step 2 — Privacy Policy URL (20 min)
 
-Chrome requires a public URL containing your privacy policy. Pick **one** option — all are free:
+Chrome requires a public URL containing your privacy policy. The source of truth is [PRIVACY_POLICY.md](PRIVACY_POLICY.md), and it is published on the personal site at **https://monydevelop.me/** (alongside the project page from [PAGE.md](PAGE.md)).
 
-The source of truth is [PRIVACY_POLICY.md](PRIVACY_POLICY.md). Publish it to one of these, paste the content as-is, and save the resulting URL for Step 4:
+Workflow:
 
-- **Notion (easiest):** new page → paste the content of [PRIVACY_POLICY.md](PRIVACY_POLICY.md) → Share → "Publish to web" → copy URL
-- **GitHub Pages:** create a public repo `perfdebugger-site`, add `privacy.html` with the same content, enable Pages under Settings. URL format: `https://<your-user>.github.io/perfdebugger-site/privacy.html`
-- **Google Sites:** go to sites.google.com, create a single-page site, publish it
+1. Edit [PRIVACY_POLICY.md](PRIVACY_POLICY.md) in this repo — it is the single source of truth.
+2. Mirror the same content to https://monydevelop.me/ so the public URL stays in sync.
+3. Save the resulting public URL (e.g. `https://monydevelop.me/projects/perf-debugger/privacy-policy`) for Step 4.
 
-Don't rewrite the content — if you change anything, update [PRIVACY_POLICY.md](PRIVACY_POLICY.md) first so the repo and the published URL stay in sync.
+Do the same for [PAGE.md](PAGE.md) → publish at `https://monydevelop.me/projects/perf-debugger` so the listing has a landing page to link to.
 
 ---
 
@@ -196,7 +196,7 @@ Would love feedback!
 
 While waiting for approval, prep these in parallel:
 
-1. **Landing page** (Vercel + Next.js, or even a Notion page)
+1. **Landing page** — published on the personal site at https://monydevelop.me/ (source: [PAGE.md](PAGE.md))
 2. **Twitter account** for the project (e.g. @PerfDebuggerApp)
 3. **Public GitHub repo** (open source builds trust)
 4. **v0.2 plan** with premium features
