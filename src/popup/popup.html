@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PerfDebugger</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚡ PerfDebugger</h1>
+      <span class="url" id="current-url">Loading...</span>
+    </header>
+
+    <!-- Core Web Vitals -->
+    <section class="metrics-section">
+      <h2>Core Web Vitals</h2>
+      <div class="metrics-grid">
+        <div class="metric" id="lcp-metric">
+          <div class="metric-label">LCP</div>
+          <div class="metric-value" id="lcp-value">-</div>
+          <div class="metric-unit">ms</div>
+          <div class="metric-status" id="lcp-status"></div>
+        </div>
+        <div class="metric" id="fcp-metric">
+          <div class="metric-label">FCP</div>
+          <div class="metric-value" id="fcp-value">-</div>
+          <div class="metric-unit">ms</div>
+          <div class="metric-status" id="fcp-status"></div>
+        </div>
+        <div class="metric" id="cls-metric">
+          <div class="metric-label">CLS</div>
+          <div class="metric-value" id="cls-value">-</div>
+          <div class="metric-unit">score</div>
+          <div class="metric-status" id="cls-status"></div>
+        </div>
+        <div class="metric" id="inp-metric">
+          <div class="metric-label">INP</div>
+          <div class="metric-value" id="inp-value">-</div>
+          <div class="metric-unit">ms</div>
+          <div class="metric-status" id="inp-status"></div>
+        </div>
+        <div class="metric" id="ttfb-metric">
+          <div class="metric-label">TTFB</div>
+          <div class="metric-value" id="ttfb-value">-</div>
+          <div class="metric-unit">ms</div>
+          <div class="metric-status" id="ttfb-status"></div>
+        </div>
+        <div class="metric" id="memory-metric">
+          <div class="metric-label">Memory</div>
+          <div class="metric-value" id="memory-value">-</div>
+          <div class="metric-unit">MB</div>
+          <div class="metric-status" id="memory-status"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slow Resources -->
+    <section class="resources-section">
+      <h2>⚠️ Slow Resources (>1s)</h2>
+      <div id="slow-resources-list" class="resources-list">
+        <div class="empty-state">No slow resources detected 🎉</div>
+      </div>
+    </section>
+
+    <footer>
+      <button id="refresh-btn">🔄 Refresh</button>
+      <button id="clear-btn">🗑️ Clear</button>
+      <span class="version">v0.1.0</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
