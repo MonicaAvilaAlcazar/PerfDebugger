@@ -35,11 +35,13 @@ Work top-to-bottom. Don't skip — each step unlocks the next.
 
 Chrome requires a public URL containing your privacy policy. Pick **one** option — all are free:
 
-- **GitHub Pages (recommended):** create a public repo `perfdebugger-site`, add `privacy.html` with the Privacy Policy text from [STORE_LISTING.md](STORE_LISTING.md), enable Pages under Settings. URL format: `https://<your-user>.github.io/perfdebugger-site/privacy.html`
-- **Notion:** create a page with the policy, click Share → "Publish to web", copy the URL
-- **Google Sites:** go to sites.google.com, create a single-page site with the policy, publish it
+The source of truth is [PRIVACY_POLICY.md](PRIVACY_POLICY.md). Publish it to one of these, paste the content as-is, and save the resulting URL for Step 4:
 
-Copy the Privacy Policy text directly from [STORE_LISTING.md](STORE_LISTING.md) — don't rewrite it. Save the URL; you'll paste it in Step 4.
+- **Notion (easiest):** new page → paste the content of [PRIVACY_POLICY.md](PRIVACY_POLICY.md) → Share → "Publish to web" → copy URL
+- **GitHub Pages:** create a public repo `perfdebugger-site`, add `privacy.html` with the same content, enable Pages under Settings. URL format: `https://<your-user>.github.io/perfdebugger-site/privacy.html`
+- **Google Sites:** go to sites.google.com, create a single-page site, publish it
+
+Don't rewrite the content — if you change anything, update [PRIVACY_POLICY.md](PRIVACY_POLICY.md) first so the repo and the published URL stay in sync.
 
 ---
 
@@ -67,16 +69,17 @@ The generated zip is what you upload in Step 4.
 
 1. Open **https://chrome.google.com/webstore/devconsole**
 2. Click **"New Item"** and upload `perf-debugger-submission.zip`
-3. Fill each tab using text from [STORE_LISTING.md](STORE_LISTING.md):
+3. Fill each tab. All copy lives in [STORE_LISTING.md](STORE_LISTING.md) — open it side-by-side and paste:
 
 ### Store listing tab
-| Field | Value |
-|-------|-------|
-| Name | PerfDebugger — Real-time Web Performance |
-| Summary | (short description from STORE_LISTING.md) |
-| Description | (long description from STORE_LISTING.md) |
+| Field | Source |
+|-------|--------|
+| Name | "Name" section of [STORE_LISTING.md](STORE_LISTING.md) |
+| Summary | "Summary" section |
+| Description | "Description" section |
 | Category | Developer Tools |
 | Language | English |
+| Single-purpose description | "Single-purpose description" section |
 
 ### Graphics tab
 | Asset | File |
@@ -89,11 +92,8 @@ The generated zip is what you upload in Step 4.
 
 ### Privacy tab
 - **Privacy Policy URL:** paste the URL from Step 2
-- **Permission justifications:**
-  - `storage` — "To save performance metrics locally"
-  - `activeTab` — "To read performance data from the current tab"
-  - `alarms` — "To schedule cleanup of old data"
-  - `host_permissions <all_urls>` — "To measure performance on any website the user visits"
+- **Permission justifications:** copy from the "Permission justifications" table in [STORE_LISTING.md](STORE_LISTING.md)
+- **Data usage disclosures:** answer per the "Data usage disclosures" section of [STORE_LISTING.md](STORE_LISTING.md) (all "No", certify no user data collected)
 
 ### Distribution tab
 - Visibility: **Public**
