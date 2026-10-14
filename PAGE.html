@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PerfDebugger — Real-time Web Performance for Chrome</title>
+  <meta name="description" content="Free Chrome extension for frontend developers: real-time Core Web Vitals, React/Vue/Angular re-render detection, slow-resource and memory-leak alerts. 100% local.">
+  <link rel="canonical" href="https://monydevelop.me/projects/perf-debugger">
+  <meta property="og:title" content="PerfDebugger — Real-time Web Performance">
+  <meta property="og:description" content="Core Web Vitals, re-render detection and memory-leak alerts as you browse. Free, private, no account.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://monydevelop.me/projects/perf-debugger">
+  <link rel="icon" href="https://res.cloudinary.com/monydevelop-me/image/upload/v1586637186/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Varela&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #12121f;
+      --surface: #1a1a2e;
+      --surface-2: #222238;
+      --border: #2e2e4a;
+      --text: #e8e6f3;
+      --muted: #a09cb8;
+      --primary: #7c4dff;
+      --primary-soft: #9b7bff;
+      --accent: #f48fb1;
+      --good: #10b981;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --mono: 'Source Code Pro', ui-monospace, Menlo, monospace;
+      --sans: 'Varela', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #faf9ff;
+        --surface: #ffffff;
+        --surface-2: #f2effc;
+        --border: #e2ddf5;
+        --text: #1a1a2e;
+        --muted: #5f5a78;
+        --primary: #6a3df0;
+        --primary-soft: #7c4dff;
+        --accent: #c2185b;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.65;
+    }
+    a { color: var(--primary-soft); }
+    a:hover { color: var(--accent); }
+    code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 1px 6px; border-radius: 4px; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+    /* Nav */
+    nav { border-bottom: 1px solid var(--border); }
+    nav .wrap { display: flex; justify-content: space-between; align-items: center; height: 60px; gap: 16px; }
+    nav a { text-decoration: none; font-family: var(--mono); font-size: 14px; }
+    nav .links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    /* Hero */
+    .hero { padding: 80px 0 64px; text-align: center; }
+    .badge {
+      display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--primary-soft);
+      border: 1px solid var(--border); background: var(--surface); padding: 4px 12px; border-radius: 999px; margin-bottom: 24px;
+    }
+    h1 { font-size: clamp(36px, 6vw, 58px); line-height: 1.12; font-weight: 400; letter-spacing: -0.5px; }
+    h1 .grad { background: linear-gradient(90deg, var(--primary-soft), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lead { color: var(--muted); font-size: 20px; max-width: 640px; margin: 20px auto 36px; }
+    .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-block; text-decoration: none; padding: 12px 22px; border-radius: 8px;
+      font-family: var(--mono); font-size: 15px; font-weight: 600; border: 1px solid var(--border);
+      color: var(--text); background: var(--surface); transition: transform 120ms ease, border-color 120ms ease;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: var(--primary-soft); color: var(--text); }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn.primary:hover { color: #fff; }
+    .small { font-size: 14px; color: var(--muted); margin-top: 16px; }
+
+    section { padding: 56px 0; }
+    h2 { font-size: 30px; font-weight: 400; margin-bottom: 8px; }
+    h2 + .sub { color: var(--muted); margin-bottom: 32px; }
+    h3 { font-size: 19px; font-weight: 400; margin-bottom: 6px; }
+
+    /* Features */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .card p { color: var(--muted); font-size: 15px; }
+    .card .icon { font-size: 26px; margin-bottom: 10px; display: block; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .chip { font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); color: var(--text); }
+
+    /* Comparison */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 15px; }
+    th { font-family: var(--mono); font-size: 13px; color: var(--muted); font-weight: 600; background: var(--surface-2); }
+    tr:last-child td { border-bottom: none; }
+    td.yes { color: var(--good); }
+
+    /* Steps */
+    ol.steps { list-style: none; counter-reset: s; display: grid; gap: 14px; }
+    ol.steps li { counter-increment: s; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px 18px 64px; position: relative; }
+    ol.steps li::before {
+      content: counter(s); position: absolute; left: 20px; top: 18px; width: 30px; height: 30px; border-radius: 50%;
+      background: var(--primary); color: #fff; font-family: var(--mono); font-size: 14px; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Roadmap */
+    .timeline { display: grid; gap: 16px; }
+    .release { display: grid; grid-template-columns: 120px 1fr; gap: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; }
+    .release .ver { font-family: var(--mono); color: var(--primary-soft); font-weight: 600; }
+    .release .ver span { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+    .release ul { list-style: none; }
+    .release li { padding: 2px 0; color: var(--muted); }
+    .release li::before { content: '✓  '; color: var(--good); }
+    .release.next li::before { content: '○  '; color: var(--muted); }
+
+    /* FAQ */
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
+    summary { cursor: pointer; font-size: 17px; }
+    details p { color: var(--muted); margin-top: 10px; font-size: 15px; }
+
+    .privacy { background: linear-gradient(135deg, var(--surface), var(--surface-2)); border: 1px solid var(--border); border-radius: 16px; padding: 36px; }
+    .privacy ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 20px 0; }
+    .privacy li::before { content: '🔒 '; }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+    footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    footer a { text-decoration: none; }
+
+    a:focus-visible, summary:focus-visible { outline: 2px solid var(--primary-soft); outline-offset: 3px; border-radius: 4px; }
+
+    @media (max-width: 600px) {
+      .hero { padding: 56px 0 40px; }
+      .release { grid-template-columns: 1fr; gap: 8px; }
+      .privacy { padding: 24px; }
+      nav .links a.hide-sm { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap">
+      <a href="https://monydevelop.me/">← monydevelop.me</a>
+      <div class="links">
+        <a href="#features">Features</a>
+        <a href="#faq" class="hide-sm">FAQ</a>
+        <a href="https://monydevelop.me/projects/perf-debugger/privacy-policy">Privacy</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <span class="badge">v1.0 · Free &amp; open-source Chrome extension</span>
+      <h1>Real-time web performance,<br><span class="grad">right where you work.</span></h1>
+      <p class="lead">PerfDebugger shows Core Web Vitals, component re-renders, slow requests and memory leaks for the page you're on, instantly. No 60-second audits. No simulated devices.</p>
+      <div class="cta">
+        <!-- TODO: replace REPLACE_WITH_ITEM_ID with the Chrome Web Store item ID once the listing is approved. -->
+        <a class="btn primary" href="https://chromewebstore.google.com/detail/REPLACE_WITH_ITEM_ID">Add to Chrome — it's free</a>
+        <a class="btn" href="https://github.com/MonicaAvilaAlcazar/PerfDebugger">View on GitHub</a>
+      </div>
+      <p class="small">100% local · No account · No tracking · MIT licensed</p>
+    </div>
+  </header>
+
+  <main>
+    <section id="features">
+      <div class="wrap">
+        <h2>What it does</h2>
+        <p class="sub">Everything a frontend developer checks daily, one click away in the toolbar.</p>
+        <div class="grid">
+          <article class="card">
+            <span class="icon" aria-hidden="true">⚡</span>
+            <h3>Real-time Core Web Vitals</h3>
+            <p>Live values from your real browser, color-coded green / yellow / red.</p>
+            <div class="chips"><span class="chip">LCP</span><span class="chip">FCP</span><span class="chip">CLS</span><span class="chip">INP</span><span class="chip">TTFB</span></div>
+          </article>
+          <article class="card">
+            <span class="icon" aria-hidden="true">🔁</span>
+            <h3>Re-render detection</h3>
+            <p>See which components re-render and how often, live as you interact. No code changes, and no conflicts with framework DevTools.</p>
+            <div class="chips"><span class="chip">React</span><span class="chip">Vue 2/3</span><span class="chip">Angular</span></div>
+          </article>
+          <article class="card">
+            <span class="icon" aria-hidden="true">⚠️</span>
+            <h3>Slow-resource detection</h3>
+            <p>Network requests slower than your cutoff (1 s by default) are flagged and sorted by impact.</p>
+          </article>
+          <article class="card">
+            <span class="icon" aria-hidden="true">🔔</span>
+            <h3>Memory &amp; leak alerts</h3>
+            <p>Tracks JS heap usage and warns you when it keeps growing over a two-minute window.</p>
+          </article>
+          <article class="card">
+            <span class="icon" aria-hidden="true">📈</span>
+            <h3>Dashboard &amp; history</h3>
+            <p>Every page you've tested in one place: per-URL trends with median and p75, sortable and filterable.</p>
+          </article>
+          <article class="card">
+            <span class="icon" aria-hidden="true">📥</span>
+            <h3>CSV &amp; JSON export</h3>
+            <p>Export one page or everything. Drop it into a spreadsheet, a ticket or a performance review.</p>
+          </article>
+          <article class="card">
+            <span class="icon" aria-hidden="true">⚙️</span>
+            <h3>Configurable thresholds</h3>
+            <p>Defaults follow Google's official thresholds. Tighten them to your team's performance budget.</p>
+          </article>
+          <article class="card">
+            <span class="icon" aria-hidden="true">🛠️</span>
+            <h3>Framework-agnostic</h3>
+            <p>Works on any site: Next.js, Nuxt, SvelteKit, Angular, static sites, SPAs, SSR, or no framework at all.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="compare">
+      <div class="wrap">
+        <h2>Why not just use Lighthouse?</h2>
+        <p class="sub">Lighthouse is for audits. PerfDebugger is for everyday debugging.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th scope="col"></th><th scope="col">Lighthouse</th><th scope="col">PerfDebugger</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Speed</td><td>30–60 seconds per run</td><td class="yes">Instant, always on</td></tr>
+              <tr><td>Data</td><td>Simulated device &amp; throttling</td><td class="yes">Your real browser</td></tr>
+              <tr><td>Interactions (INP)</td><td>Not measured in navigation mode</td><td class="yes">Measured as you click and type</td></tr>
+              <tr><td>Re-renders</td><td>—</td><td class="yes">React, Vue, Angular</td></tr>
+              <tr><td>Best for</td><td>CI/CD, formal audits</td><td class="yes">Daily development</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="wrap">
+        <h2>How to use it</h2>
+        <p class="sub">Up and running in under a minute.</p>
+        <ol class="steps">
+          <li><strong>Install</strong> PerfDebugger from the Chrome Web Store and pin it to your toolbar.</li>
+          <li><strong>Open any page</strong>, whether it's your local dev server, staging or production.</li>
+          <li><strong>Click the ⚡ icon</strong> to see metrics stream in. Interact with the page to measure INP and re-renders.</li>
+          <li><strong>Open the dashboard</strong> (📈) to compare pages over time, or export CSV/JSON.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="privacy">
+      <div class="wrap">
+        <div class="privacy">
+          <h2>Privacy first</h2>
+          <p class="sub" style="margin-bottom:0">PerfDebugger has no servers. Your browsing data never leaves your device.</p>
+          <ul>
+            <li>All metrics stored locally</li>
+            <li>No analytics or tracking</li>
+            <li>No account required</li>
+            <li>Auto-deleted after 7 days (configurable)</li>
+          </ul>
+          <a href="https://monydevelop.me/projects/perf-debugger/privacy-policy">Read the full privacy policy →</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="wrap">
+        <h2>Release history</h2>
+        <p class="sub">Built in the open and shaped by feedback.</p>
+        <div class="timeline">
+          <div class="release">
+            <div class="ver">v1.0 <span>current</span></div>
+            <ul>
+              <li>Re-render detection for React, Vue and Angular</li>
+              <li>Dashboard with every tracked page, trends, median and p75</li>
+              <li>CSV export (per page and all pages)</li>
+              <li>Configurable thresholds, slow-request cutoff and data retention</li>
+              <li>Published on the Chrome Web Store</li>
+            </ul>
+          </div>
+          <div class="release">
+            <div class="ver">v0.2</div>
+            <ul>
+              <li>Per-URL history with sparkline charts</li>
+              <li>Memory-leak alerts</li>
+              <li>JSON export</li>
+            </ul>
+          </div>
+          <div class="release">
+            <div class="ver">v0.1</div>
+            <ul>
+              <li>Core Web Vitals, slow resources, memory monitoring</li>
+            </ul>
+          </div>
+          <div class="release next">
+            <div class="ver">Coming next <span>separate extension</span></div>
+            <ul>
+              <li>AI-powered performance suggestions, as a separate free extension</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap">
+        <h2>FAQ</h2>
+        <p class="sub">Quick answers.</p>
+        <details>
+          <summary>Is it really free?</summary>
+          <p>Yes. Every feature is free, with no account, trial or paywall. It's also open source under the MIT license, so you can read every line of code on <a href="https://github.com/MonicaAvilaAlcazar/PerfDebugger">GitHub</a>.</p>
+        </details>
+        <details>
+          <summary>Why does it ask to "read and change data on all websites"?</summary>
+          <p>To measure performance, PerfDebugger has to run a small script on the pages you visit. That's how Chrome describes this access. The script only reads performance data, never page content, and nothing is sent anywhere.</p>
+        </details>
+        <details>
+          <summary>Does re-render detection work in production builds?</summary>
+          <p>For React and Vue, yes. Component names may be minified in production, so they're most readable on a dev build. Angular needs a development build (<code>ng serve</code>), because production builds remove the profiling hooks.</p>
+        </details>
+        <details>
+          <summary>Will it conflict with React DevTools or Vue DevTools?</summary>
+          <p>No. PerfDebugger reads framework internals without installing its own DevTools hook, so the official DevTools keep working normally.</p>
+        </details>
+        <details>
+          <summary>Why is the Memory metric empty?</summary>
+          <p>Memory uses Chrome's <code>performance.memory</code> API. It's available in Chrome and most Chromium browsers, but some pages and browsers restrict it.</p>
+        </details>
+        <details>
+          <summary>How do I delete my data?</summary>
+          <p>Use 🗑️ Clear in the popup for a single page, or "Delete all data" in the dashboard. Uninstalling the extension also removes everything.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="wrap">
+        <h2>Feedback &amp; support</h2>
+        <p class="sub">Found a bug or have an idea? I read every message.</p>
+        <a class="btn" href="mailto:support@monydevelop.me?subject=PerfDebugger%20feedback">✉️ support@monydevelop.me</a>
+        <a class="btn" href="https://github.com/MonicaAvilaAlcazar/PerfDebugger/issues">🐛 Open an issue</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 PerfDebugger · Made with ⚡ by <a href="https://monydevelop.me/">Monica Avila</a></span>
+      <span><a href="https://github.com/MonicaAvilaAlcazar/PerfDebugger">GitHub</a> · <a href="https://monydevelop.me/projects/perf-debugger/privacy-policy">Privacy policy</a> · <a href="mailto:support@monydevelop.me">Support</a></span>
+    </div>
+  </footer>
+</body>
+</html>
