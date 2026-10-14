@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PerfDebugger — Settings</title>
+  <link rel="stylesheet" href="../shared/page.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <div>
+        <h1>⚡ PerfDebugger Settings</h1>
+        <p>Thresholds control the green / yellow / red status colors everywhere in the extension.</p>
+      </div>
+      <div class="actions">
+        <a class="button" id="dashboard-link" href="../dashboard/dashboard.html">📈 Open dashboard</a>
+      </div>
+    </header>
+
+    <form id="settings-form" novalidate>
+      <section class="card">
+        <h2>Metric thresholds</h2>
+        <table class="thresholds">
+          <thead>
+            <tr>
+              <th scope="col">Metric</th>
+              <th scope="col"><span class="status-dot status-good"></span>Good up to</th>
+              <th scope="col"><span class="status-dot status-warn"></span>Needs improvement up to</th>
+              <th scope="col"><span class="status-dot status-bad"></span>Poor</th>
+            </tr>
+          </thead>
+          <tbody id="thresholds-body"></tbody>
+        </table>
+        <p class="hint">Defaults follow Google's official Core Web Vitals thresholds. The memory threshold is a PerfDebugger heuristic.</p>
+      </section>
+
+      <section class="card">
+        <h2>Detection</h2>
+        <div class="field">
+          <label for="slow-resource-ms">Flag network requests slower than</label>
+          <div class="input-unit">
+            <input type="number" id="slow-resource-ms" min="100" max="60000" step="100" required>
+            <span>ms</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="render-tracking">Re-render detection (React, Vue, Angular)</label>
+          <label class="switch">
+            <input type="checkbox" id="render-tracking">
+            <span class="slider" aria-hidden="true"></span>
+          </label>
+        </div>
+        <p class="hint">Re-render detection reads framework internals inside the page. It never modifies your app and doesn't interfere with React, Vue or Angular DevTools. Angular needs a development build.</p>
+      </section>
+
+      <section class="card">
+        <h2>Data</h2>
+        <div class="field">
+          <label for="retention-days">Keep metrics and history for</label>
+          <div class="input-unit">
+            <input type="number" id="retention-days" min="1" max="30" step="1" required>
+            <span>days</span>
+          </div>
+        </div>
+        <p class="hint">All data stays on this device in <code>chrome.storage.local</code>. Older entries are deleted automatically.</p>
+      </section>
+
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+
+      <div class="actions">
+        <button type="submit" class="primary">Save settings</button>
+        <button type="button" id="reset-btn">Restore defaults</button>
+      </div>
+    </form>
+
+    <footer class="page-footer">
+      <span id="version"></span>
+      <a href="https://monydevelop.me/projects/perf-debugger" target="_blank" rel="noopener">Website</a>
+      <a href="https://monydevelop.me/projects/perf-debugger/privacy-policy" target="_blank" rel="noopener">Privacy policy</a>
+      <a href="https://github.com/MonicaAvilaAlcazar/PerfDebugger" target="_blank" rel="noopener">Source code (MIT)</a>
+      <a href="mailto:support@monydevelop.me">support@monydevelop.me</a>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status">Settings saved</div>
+
+  <script src="../shared/settings.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

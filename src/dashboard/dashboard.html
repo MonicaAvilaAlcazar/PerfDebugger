@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PerfDebugger — Dashboard</title>
+  <link rel="stylesheet" href="../shared/page.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <div>
+        <h1>⚡ PerfDebugger Dashboard</h1>
+        <p id="summary">Loading…</p>
+      </div>
+      <div class="actions">
+        <button id="export-json-btn" title="Download every tracked page as JSON">📥 Export all (JSON)</button>
+        <button id="export-csv-btn" title="Download every page load as CSV">📥 Export all (CSV)</button>
+        <a class="button" href="../options/options.html">⚙️ Settings</a>
+      </div>
+    </header>
+
+    <section class="overview" id="overview" aria-label="Overview"></section>
+
+    <section class="card">
+      <div class="toolbar">
+        <h2>Tracked pages</h2>
+        <input type="search" id="search" placeholder="Filter by URL…" aria-label="Filter pages by URL">
+      </div>
+      <div class="table-wrap">
+        <table class="pages" id="pages-table">
+          <thead>
+            <tr>
+              <th scope="col" data-sort="page">Page</th>
+              <th scope="col" data-sort="lastSeen">Last seen</th>
+              <th scope="col" data-sort="lcp">LCP</th>
+              <th scope="col" data-sort="fcp">FCP</th>
+              <th scope="col" data-sort="cls">CLS</th>
+              <th scope="col" data-sort="inp">INP</th>
+              <th scope="col" data-sort="ttfb">TTFB</th>
+              <th scope="col" data-sort="memory">Memory</th>
+              <th scope="col" data-sort="renders">Re-renders</th>
+              <th scope="col" data-sort="sessions">Loads</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="pages-body"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="empty" hidden>
+        No data yet. Browse a few websites with PerfDebugger enabled, then come back here.
+      </div>
+    </section>
+
+    <section class="card detail" id="detail" hidden aria-live="polite"></section>
+
+    <div class="danger-zone">
+      <button class="danger" id="clear-all-btn">🗑️ Delete all data</button>
+    </div>
+
+    <footer class="page-footer">
+      <span id="version"></span>
+      <span>Metrics are stored on this device only.</span>
+      <a href="https://monydevelop.me/projects/perf-debugger" target="_blank" rel="noopener">Website</a>
+      <a href="mailto:support@monydevelop.me">support@monydevelop.me</a>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="../shared/settings.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

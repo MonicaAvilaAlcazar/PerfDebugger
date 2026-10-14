@@ -52,6 +52,43 @@ h2 {
   margin-bottom: 16px;
 }
 
+.leak-alert {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #2a1a0e;
+  border: 1px solid #7a3a14;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.leak-alert[hidden] {
+  display: none;
+}
+
+.leak-icon {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.leak-body {
+  flex: 1;
+}
+
+.leak-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fbbf24;
+  margin-bottom: 2px;
+}
+
+.leak-detail {
+  font-size: 11px;
+  color: #d4a574;
+  line-height: 1.4;
+}
+
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -154,6 +191,68 @@ h2 {
   font-size: 12px;
 }
 
+.history-section {
+  margin-bottom: 16px;
+}
+
+.history-empty {
+  text-align: center;
+  color: #666;
+  padding: 16px;
+  font-size: 11px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.history-item {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.history-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.history-label {
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.history-last {
+  font-size: 12px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.sparkline {
+  width: 100%;
+  height: 28px;
+  display: block;
+}
+
+.history-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 9px;
+  color: #666;
+}
+
 footer {
   display: flex;
   gap: 8px;
@@ -170,11 +269,34 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 11px;
-  transition: all 0.2s;
+  transition: background 150ms ease, border-color 150ms ease, transform 80ms ease;
 }
 
 button:hover {
   background: #3a3a3a;
+}
+
+button:active {
+  transform: scale(0.94);
+}
+
+/* Post-click confirmation flash — color tells the user which action fired. */
+button.flashed-info {
+  background: #1e3a5f;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+button.flashed-success {
+  background: #1e5f3a;
+  border-color: #16a34a;
+  color: #fff;
+}
+
+button.flashed-danger {
+  background: #5f1e1e;
+  border-color: #dc2626;
+  color: #fff;
 }
 
 .version {
@@ -195,4 +317,141 @@ button:hover {
 .resources-list::-webkit-scrollbar-thumb {
   background: #3a3a3a;
   border-radius: 3px;
+}
+
+/* Header actions (dashboard / settings) */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.header-row h1 {
+  margin-bottom: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.icon-btn {
+  padding: 4px 8px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button:focus-visible {
+  outline: 2px solid #9b7bff;
+  outline-offset: 1px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.unsupported {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 20px 16px;
+  margin-bottom: 16px;
+  color: #aaa;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Re-renders */
+.renders-section {
+  margin-bottom: 16px;
+}
+
+.framework-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #2b2350;
+  color: #c4b5fd;
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+  vertical-align: 1px;
+}
+
+.renders-body {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.renders-body .empty-state {
+  padding: 12px;
+}
+
+.renders-note {
+  font-size: 11px;
+  color: #d4a574;
+  line-height: 1.4;
+  padding: 4px 0;
+}
+
+.renders-summary {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #888;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.renders-summary strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.render-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 40px;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 11px;
+}
+
+.render-name {
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.render-bar {
+  height: 6px;
+  background: #2a2a2a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.render-bar span {
+  display: block;
+  height: 100%;
+  background: #9b7bff;
+  border-radius: 3px;
+}
+
+.render-count {
+  text-align: right;
+  color: #fff;
+  font-weight: 600;
 }

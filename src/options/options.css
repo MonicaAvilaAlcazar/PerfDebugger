@@ -1,0 +1,158 @@
+.page {
+  max-width: 760px;
+}
+
+.thresholds {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.thresholds th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 8px 8px 0;
+}
+
+.thresholds td {
+  padding: 6px 8px 6px 0;
+  border-top: 1px solid var(--border);
+}
+
+.thresholds .metric-name strong {
+  color: var(--text-strong);
+  display: block;
+}
+
+.thresholds .metric-name span {
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.thresholds input {
+  width: 100px;
+}
+
+.thresholds .poor {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.input-unit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.input-unit input {
+  width: 100px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--faint);
+  margin-top: 10px;
+}
+
+.hint code {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+input.invalid {
+  border-color: var(--bad);
+}
+
+.form-error {
+  color: #fca5a5;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* Toggle switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border-strong);
+  border-radius: 11px;
+  transition: background 150ms ease;
+}
+
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 150ms ease;
+}
+
+.switch input:checked + .slider {
+  background: #7c4dff;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
+}
+
+.switch input:focus-visible + .slider {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .thresholds thead {
+    display: none;
+  }
+  .thresholds tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+  }
+  .thresholds td {
+    border: none;
+    padding: 0;
+  }
+  .thresholds .metric-name,
+  .thresholds .poor {
+    grid-column: 1 / -1;
+  }
+  .field {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

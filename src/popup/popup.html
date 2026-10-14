@@ -8,68 +8,108 @@
 <body>
   <div class="container">
     <header>
-      <h1>⚡ PerfDebugger</h1>
+      <div class="header-row">
+        <h1>⚡ PerfDebugger</h1>
+        <div class="header-actions">
+          <button class="icon-btn" id="dashboard-btn" title="Open the dashboard (all tracked pages)">📈</button>
+          <button class="icon-btn" id="settings-btn" title="Settings (thresholds, retention, re-render tracking)">⚙️</button>
+        </div>
+      </div>
       <span class="url" id="current-url">Loading...</span>
     </header>
 
-    <!-- Core Web Vitals -->
-    <section class="metrics-section">
-      <h2>Core Web Vitals</h2>
-      <div class="metrics-grid">
-        <div class="metric" id="lcp-metric">
-          <div class="metric-label">LCP</div>
-          <div class="metric-value" id="lcp-value">-</div>
-          <div class="metric-unit">ms</div>
-          <div class="metric-status" id="lcp-status"></div>
-        </div>
-        <div class="metric" id="fcp-metric">
-          <div class="metric-label">FCP</div>
-          <div class="metric-value" id="fcp-value">-</div>
-          <div class="metric-unit">ms</div>
-          <div class="metric-status" id="fcp-status"></div>
-        </div>
-        <div class="metric" id="cls-metric">
-          <div class="metric-label">CLS</div>
-          <div class="metric-value" id="cls-value">-</div>
-          <div class="metric-unit">score</div>
-          <div class="metric-status" id="cls-status"></div>
-        </div>
-        <div class="metric" id="inp-metric">
-          <div class="metric-label">INP</div>
-          <div class="metric-value" id="inp-value">-</div>
-          <div class="metric-unit">ms</div>
-          <div class="metric-status" id="inp-status"></div>
-        </div>
-        <div class="metric" id="ttfb-metric">
-          <div class="metric-label">TTFB</div>
-          <div class="metric-value" id="ttfb-value">-</div>
-          <div class="metric-unit">ms</div>
-          <div class="metric-status" id="ttfb-status"></div>
-        </div>
-        <div class="metric" id="memory-metric">
-          <div class="metric-label">Memory</div>
-          <div class="metric-value" id="memory-value">-</div>
-          <div class="metric-unit">MB</div>
-          <div class="metric-status" id="memory-status"></div>
-        </div>
-      </div>
+    <!-- Shown on chrome://, Web Store, PDF viewer, etc. -->
+    <section class="unsupported" id="unsupported" hidden>
+      PerfDebugger can only measure regular web pages (http, https or file).
     </section>
 
-    <!-- Slow Resources -->
-    <section class="resources-section">
-      <h2>⚠️ Slow Resources (>1s)</h2>
-      <div id="slow-resources-list" class="resources-list">
-        <div class="empty-state">No slow resources detected 🎉</div>
-      </div>
-    </section>
+    <div id="page-content">
+      <!-- Memory leak warning (hidden unless detected) -->
+      <section class="leak-alert" id="leak-alert" hidden>
+        <div class="leak-icon">🔔</div>
+        <div class="leak-body">
+          <div class="leak-title">Possible memory leak</div>
+          <div class="leak-detail" id="leak-detail"></div>
+        </div>
+      </section>
+
+      <!-- Core Web Vitals -->
+      <section class="metrics-section">
+        <h2>Core Web Vitals</h2>
+        <div class="metrics-grid">
+          <div class="metric" id="lcp-metric">
+            <div class="metric-label">LCP</div>
+            <div class="metric-value" id="lcp-value">-</div>
+            <div class="metric-unit">ms</div>
+            <div class="metric-status" id="lcp-status"></div>
+          </div>
+          <div class="metric" id="fcp-metric">
+            <div class="metric-label">FCP</div>
+            <div class="metric-value" id="fcp-value">-</div>
+            <div class="metric-unit">ms</div>
+            <div class="metric-status" id="fcp-status"></div>
+          </div>
+          <div class="metric" id="cls-metric">
+            <div class="metric-label">CLS</div>
+            <div class="metric-value" id="cls-value">-</div>
+            <div class="metric-unit">score</div>
+            <div class="metric-status" id="cls-status"></div>
+          </div>
+          <div class="metric" id="inp-metric">
+            <div class="metric-label">INP</div>
+            <div class="metric-value" id="inp-value">-</div>
+            <div class="metric-unit">ms</div>
+            <div class="metric-status" id="inp-status"></div>
+          </div>
+          <div class="metric" id="ttfb-metric">
+            <div class="metric-label">TTFB</div>
+            <div class="metric-value" id="ttfb-value">-</div>
+            <div class="metric-unit">ms</div>
+            <div class="metric-status" id="ttfb-status"></div>
+          </div>
+          <div class="metric" id="memory-metric">
+            <div class="metric-label">Memory</div>
+            <div class="metric-value" id="memory-value">-</div>
+            <div class="metric-unit">MB</div>
+            <div class="metric-status" id="memory-status"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Re-renders -->
+      <section class="renders-section">
+        <h2>🔁 Re-renders <span class="framework-badge" id="framework-badge" hidden></span></h2>
+        <div id="renders-body" class="renders-body">
+          <div class="empty-state">No React, Vue or Angular app detected yet.</div>
+        </div>
+      </section>
+
+      <!-- Slow Resources -->
+      <section class="resources-section">
+        <h2>⚠️ Slow Resources (&gt;<span id="slow-threshold">1s</span>)</h2>
+        <div id="slow-resources-list" class="resources-list">
+          <div class="empty-state">No slow resources detected 🎉</div>
+        </div>
+      </section>
+
+      <!-- Historical Performance -->
+      <section class="history-section">
+        <h2>📊 History</h2>
+        <div class="history-empty" id="history-empty">No history yet — reload this page a few times to build a trend.</div>
+        <div class="history-grid" id="history-grid"></div>
+      </section>
+    </div>
 
     <footer>
-      <button id="refresh-btn">🔄 Refresh</button>
-      <button id="clear-btn">🗑️ Clear</button>
-      <span class="version">v0.1.0</span>
+      <button id="refresh-btn" title="Reload metrics for the current page">🔄 Refresh</button>
+      <button id="clear-btn" title="Delete saved metrics and history for this page">🗑️ Clear</button>
+      <button id="export-json-btn" title="Download metrics + history as JSON">📥 JSON</button>
+      <button id="export-csv-btn" title="Download history as CSV (one row per page load)">📥 CSV</button>
+      <span class="version" id="version"></span>
     </footer>
   </div>
 
+  <script src="../shared/settings.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

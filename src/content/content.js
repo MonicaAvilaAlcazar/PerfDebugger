@@ -16,8 +16,14 @@
     inp: null,
     ttfb: null,
     slowResources: [],
-    memory: null
+    memory: null,
+    memoryLeak: null,
+    renders: null
   };
+
+  // User settings (thresholds, slow-resource cutoff, re-render tracking).
+  // Defaults apply until chrome.storage.sync answers.
+  let settings = PerfSettings.normalize(null);
 
   // ============================================
   // 1. LARGEST CONTENTFUL PAINT (LCP)
@@ -137,29 +143,117 @@
   }
 
   // ============================================
-  // 6. SLOW RESOURCES (> 1 second)
+  // 6. SLOW RESOURCES (> configurable threshold, default 1s)
+  // Started once settings load; buffered:true replays earlier entries.
   // ============================================
-  try {
-    const resourceObserver = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        if (entry.duration > 1000) {
-          metrics.slowResources.push({
-            name: entry.name.substring(0, 100),
-            duration: Math.round(entry.duration),
-            size: entry.transferSize || 0,
-            type: entry.initiatorType
-          });
-          // Cap at 20 slow resources.
-          if (metrics.slowResources.length > 20) {
-            metrics.slowResources.shift();
+  function startResourceObserver() {
+    try {
+      const resourceObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.duration > settings.slowResourceMs) {
+            metrics.slowResources.push({
+              name: entry.name.substring(0, 100),
+              duration: Math.round(entry.duration),
+              size: entry.transferSize || 0,
+              type: entry.initiatorType
+            });
+            // Cap at 20 slow resources.
+            if (metrics.slowResources.length > 20) {
+              metrics.slowResources.shift();
+            }
+            saveMetrics();
           }
-          saveMetrics();
         }
+      });
+      resourceObserver.observe({ type: 'resource', buffered: true });
+    } catch (e) {
+      console.warn('Resource observer not supported');
+    }
+  }
+
+  // ============================================
+  // 8. RE-RENDER DETECTION (React / Vue / Angular)
+  // render-tracker.js runs in the page's MAIN world and posts per-component
+  // deltas here once per second. We accumulate them per page.
+  // ============================================
+  const SOURCE_MAIN = 'perfdebugger-main';
+  const SOURCE_ISOLATED = 'perfdebugger-isolated';
+  const MAX_TRACKED_COMPONENTS = 200;
+  const MAX_STORED_COMPONENTS = 30;
+  let renderCounts = new Map();
+
+  function resetRenders() {
+    renderCounts = new Map();
+    metrics.renders = null;
+  }
+
+  function sendRenderConfig() {
+    const origin = window.location.origin === 'null' ? '*' : window.location.origin;
+    window.postMessage({
+      source: SOURCE_ISOLATED,
+      type: 'config',
+      renderTracking: settings.renderTracking
+    }, origin);
+  }
+
+  function onRenderDelta(data) {
+    if (!settings.renderTracking) return;
+    const framework = typeof data.framework === 'string' ? data.framework.slice(0, 20) : null;
+    if (!framework) return;
+    const r = metrics.renders || (metrics.renders = {
+      framework, note: null, total: 0, commits: 0, since: Date.now(), components: []
+    });
+    r.framework = framework;
+    if (typeof data.note === 'string') r.note = data.note.slice(0, 200);
+    const commits = Number(data.commits);
+    if (Number.isFinite(commits) && commits > 0) r.commits += Math.round(commits);
+    if (Array.isArray(data.components)) {
+      for (const c of data.components.slice(0, 50)) {
+        const name = typeof c.name === 'string' ? c.name.slice(0, 80) : 'Anonymous';
+        const n = Number(c.renders);
+        if (!Number.isFinite(n) || n <= 0) continue;
+        if (!renderCounts.has(name) && renderCounts.size >= MAX_TRACKED_COMPONENTS) continue;
+        renderCounts.set(name, (renderCounts.get(name) || 0) + Math.round(n));
+        r.total += Math.round(n);
+      }
+    }
+    r.components = [...renderCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, MAX_STORED_COMPONENTS)
+      .map(([name, renders]) => ({ name, renders }));
+    saveMetrics();
+  }
+
+  window.addEventListener('message', (event) => {
+    if (event.source !== window) return;
+    const data = event.data;
+    if (!data || data.source !== SOURCE_MAIN) return;
+    if (data.type === 'ready') sendRenderConfig();
+    else if (data.type === 'renders') onRenderDelta(data);
+  });
+
+  // ============================================
+  // SETTINGS
+  // ============================================
+  PerfSettings.load((loaded) => {
+    settings = loaded;
+    startResourceObserver();
+    sendRenderConfig();
+  });
+
+  try {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== 'sync' || !changes[PerfSettings.SETTINGS_KEY]) return;
+      const wasTracking = settings.renderTracking;
+      settings = PerfSettings.normalize(changes[PerfSettings.SETTINGS_KEY].newValue);
+      if (wasTracking !== settings.renderTracking) {
+        if (!settings.renderTracking) resetRenders();
+        sendRenderConfig();
+        saveMetrics();
       }
     });
-    resourceObserver.observe({ type: 'resource', buffered: true });
   } catch (e) {
-    console.warn('Resource observer not supported');
+    // Context invalidated.
   }
 
   // ============================================
@@ -168,13 +262,48 @@
   // which almost no real-world page satisfies).
   // ============================================
   let memoryInterval = null;
+  // Rolling window of recent {timestamp, used} samples used for leak detection.
+  // 5s polling × 24 samples = 2 min window.
+  const memorySamples = [];
+  const MEMORY_WINDOW = 24;
+
+  // Heuristic: sustained growth across the window with both meaningful
+  // absolute (>= 20MB) and relative (>= 25%) increase between the first
+  // and last quartiles. Avoids flagging momentary spikes.
+  function detectMemoryLeak() {
+    if (memorySamples.length < 12) return null;
+    const q = Math.max(3, Math.floor(memorySamples.length / 4));
+    const first = memorySamples.slice(0, q);
+    const last = memorySamples.slice(-q);
+    const avg = arr => arr.reduce((s, x) => s + x.used, 0) / arr.length;
+    const firstAvg = avg(first);
+    const lastAvg = avg(last);
+    const growthMB = lastAvg - firstAvg;
+    const growthPct = firstAvg > 0 ? (growthMB / firstAvg) * 100 : 0;
+    if (growthMB < 20 || growthPct < 25) return null;
+    const durationSec = Math.round(
+      (memorySamples[memorySamples.length - 1].timestamp - memorySamples[0].timestamp) / 1000
+    );
+    return {
+      growthMB: Math.round(growthMB),
+      growthPct: Math.round(growthPct),
+      durationSec,
+      fromMB: Math.round(firstAvg),
+      toMB: Math.round(lastAvg)
+    };
+  }
+
   function checkMemory() {
     if (performance.memory) {
+      const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
       metrics.memory = {
-        used: Math.round(performance.memory.usedJSHeapSize / 1048576), // MB
+        used, // MB
         total: Math.round(performance.memory.totalJSHeapSize / 1048576),
         limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576)
       };
+      memorySamples.push({ timestamp: Date.now(), used });
+      if (memorySamples.length > MEMORY_WINDOW) memorySamples.shift();
+      metrics.memoryLeak = detectMemoryLeak();
       saveMetrics();
     }
   }
@@ -207,11 +336,52 @@
   }
 
   let currentKey = `metrics_${window.location.hostname}${window.location.pathname}`;
+  let historyKey = `history_${window.location.hostname}${window.location.pathname}`;
+
+  // History is kept in memory and written alongside every metrics save, so the
+  // unload path doesn't need an async get-then-set (which is unreliable on
+  // pagehide — the get callback rarely fires before the context is torn down).
+  // One entry per page session, updated in place as metrics arrive.
+  let historyArr = null;       // populated after initial load
+  let sessionEntry = null;
+  const HISTORY_MAX = 50;
+
+  function loadHistoryAndStartSession() {
+    const keyAtLoad = historyKey;
+    try {
+      chrome.storage.local.get(keyAtLoad, (data) => {
+        if (!extensionAlive()) return;
+        if (keyAtLoad !== historyKey) return; // route changed before we returned
+        historyArr = Array.isArray(data[keyAtLoad]) ? data[keyAtLoad] : [];
+        sessionEntry = { timestamp: Date.now(), lcp: null, fcp: null, cls: null, inp: null, ttfb: null, memory: null, renders: null };
+        historyArr.push(sessionEntry);
+        if (historyArr.length > HISTORY_MAX) historyArr.splice(0, historyArr.length - HISTORY_MAX);
+        // Reflect any metrics already collected before history finished loading.
+        writeToStorage();
+      });
+    } catch (e) {
+      // Context invalidated.
+    }
+  }
+
+  function syncSessionEntry() {
+    if (!sessionEntry) return;
+    sessionEntry.lcp = metrics.lcp;
+    sessionEntry.fcp = metrics.fcp;
+    sessionEntry.cls = metrics.cls;
+    sessionEntry.inp = metrics.inp;
+    sessionEntry.ttfb = metrics.ttfb;
+    sessionEntry.memory = metrics.memory ? metrics.memory.used : null;
+    sessionEntry.renders = metrics.renders ? metrics.renders.total : null;
+  }
 
   function writeToStorage() {
     if (!extensionAlive()) return;
+    syncSessionEntry();
     try {
-      chrome.storage.local.set({ [currentKey]: metrics });
+      const payload = { [currentKey]: metrics };
+      if (Array.isArray(historyArr)) payload[historyKey] = historyArr;
+      chrome.storage.local.set(payload);
     } catch (e) {
       // Context invalidated between check and call — safe to ignore.
     }
@@ -239,6 +409,10 @@
   });
   window.addEventListener('pagehide', flushMetrics);
 
+  // Kick off history loading immediately. After this resolves, every
+  // subsequent saveMetrics will also persist history.
+  loadHistoryAndStartSession();
+
   // ============================================
   // SPA ROUTE CHANGES
   // Content scripts run isolated, so we can't patch history.pushState on the page.
@@ -250,13 +424,20 @@
     if (newKey === currentKey) return;
     flushMetrics();
     currentKey = newKey;
+    historyKey = `history_${window.location.hostname}${window.location.pathname}`;
+    historyArr = null;
+    sessionEntry = null;
     metrics.url = window.location.href;
     metrics.timestamp = Date.now();
     metrics.slowResources = [];
     metrics.cls = null;
+    metrics.memoryLeak = null;
+    resetRenders();
+    memorySamples.length = 0;
     clsValue = 0;
     sessionValue = 0;
     sessionEntries = [];
+    loadHistoryAndStartSession();
     saveMetrics();
   }
   if (window.navigation && typeof window.navigation.addEventListener === 'function') {
