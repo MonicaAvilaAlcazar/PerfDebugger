@@ -31,17 +31,21 @@ Work top-to-bottom. Don't skip — each step unlocks the next.
 
 ---
 
-## Step 2 — Privacy Policy URL (20 min)
+## Step 2 — Publish the website pages (20 min)
 
-Chrome requires a public URL containing your privacy policy. The source of truth is [PRIVACY_POLICY.md](PRIVACY_POLICY.md), and it is published on the personal site at **https://monydevelop.me/** (alongside the project page from [PAGE.md](PAGE.md)).
+Chrome requires a public privacy-policy URL. Both pages are ready-to-upload, self-contained HTML files (no build step, styled to match https://monydevelop.me/):
+
+| File | Publish at |
+|------|-----------|
+| [PRIVACY_POLICY.html](PRIVACY_POLICY.html) | `https://monydevelop.me/projects/perf-debugger/privacy-policy` |
+| [PAGE.html](PAGE.html) | `https://monydevelop.me/projects/perf-debugger` |
 
 Workflow:
 
-1. Edit [PRIVACY_POLICY.md](PRIVACY_POLICY.md) in this repo — it is the single source of truth.
-2. Mirror the same content to https://monydevelop.me/ so the public URL stays in sync.
-3. Save the resulting public URL (e.g. `https://monydevelop.me/projects/perf-debugger/privacy-policy`) for Step 4.
-
-Do the same for [PAGE.md](PAGE.md) → publish at `https://monydevelop.me/projects/perf-debugger` so the listing has a landing page to link to.
+1. Edit the HTML files in this repo — they are the single source of truth.
+2. Upload them to the site at the paths above (e.g. as `public/projects/perf-debugger/index.html` and `public/projects/perf-debugger/privacy-policy/index.html` if the site is a static/Vite build).
+3. Open both URLs in a private window to confirm they load. The extension's Settings page and `homepage_url` already link to them.
+4. **After approval:** replace `REPLACE_WITH_ITEM_ID` in [PAGE.html](PAGE.html) with the real Chrome Web Store item ID so the "Add to Chrome" button works, and re-upload.
 
 ---
 
@@ -68,7 +72,7 @@ The generated zip is what you upload in Step 4.
 ## Step 4 — Store listing (30 min)
 
 1. Open **https://chrome.google.com/webstore/devconsole**
-2. Click **"New Item"** and upload `perf-debugger-submission.zip`
+2. Click **"New Item"** and upload `dist/perf-debugger-<version>.zip` from Step 3
 3. Fill each tab. All copy lives in [STORE_LISTING.md](STORE_LISTING.md) — open it side-by-side and paste:
 
 ### Store listing tab
@@ -86,14 +90,20 @@ The generated zip is what you upload in Step 4.
 |-------|------|
 | Icon | [icons/icon128.png](icons/icon128.png) |
 | Screenshot 1 | [store-assets/screenshot-1-hero.png](store-assets/screenshot-1-hero.png) |
-| Screenshot 2 | [store-assets/screenshot-2-features.png](store-assets/screenshot-2-features.png) |
-| Screenshot 3 | [store-assets/screenshot-3-comparison.png](store-assets/screenshot-3-comparison.png) |
+| Screenshot 2 | [store-assets/screenshot-4-rerenders.png](store-assets/screenshot-4-rerenders.png) |
+| Screenshot 3 | [store-assets/screenshot-5-dashboard.png](store-assets/screenshot-5-dashboard.png) |
+| Screenshot 4 | [store-assets/screenshot-2-features.png](store-assets/screenshot-2-features.png) |
+| Screenshot 5 | [store-assets/screenshot-3-comparison.png](store-assets/screenshot-3-comparison.png) |
 | Small promo tile (optional) | [store-assets/promo-tile-440x280.png](store-assets/promo-tile-440x280.png) |
 
 ### Privacy tab
-- **Privacy Policy URL:** paste the URL from Step 2
+- **Privacy Policy URL:** `https://monydevelop.me/projects/perf-debugger/privacy-policy` (from Step 2)
+- **Remote code:** "No, I am not using remote code"
 - **Permission justifications:** copy from the "Permission justifications" table in [STORE_LISTING.md](STORE_LISTING.md)
 - **Data usage disclosures:** answer per the "Data usage disclosures" section of [STORE_LISTING.md](STORE_LISTING.md) (all "No", certify no user data collected)
+
+### Account → Contact email
+- Set and verify **support@monydevelop.me** — review results and user reports go there.
 
 ### Distribution tab
 - Visibility: **Public**
@@ -132,6 +142,7 @@ Real-time Core Web Vitals, instantly. No more waiting 60s for Lighthouse.
 Built for frontend devs who debug performance daily.
 
 - Instant metrics
+- React/Vue/Angular re-render detection
 - Memory tracking
 - 100% local, no tracking
 - Free
@@ -145,14 +156,16 @@ Built for frontend devs who debug performance daily.
 Title: I built a Chrome extension for real-time Core Web Vitals debugging
 
 I got tired of running Lighthouse every time I wanted to check performance.
-So I built PerfDebugger - shows LCP, FCP, CLS, INP, TTFB instantly.
+So I built PerfDebugger - shows LCP, FCP, CLS, INP, TTFB instantly,
+plus which React/Vue/Angular components re-render the most.
 
 Key differences from Lighthouse:
 - Instant (no 60s audit)
 - Real device data (not simulated)
 - Always visible as you browse
 
-Free, open source, privacy-first (100% local).
+Free, open source (MIT) and privacy-first (100% local).
+Code: https://github.com/MonicaAvilaAlcazar/PerfDebugger
 
 [link]
 
@@ -187,7 +200,7 @@ Would love feedback!
 - Collected user feedback (good and bad)
 
 **Month 3 — decision point**
-- 200+ installs → worth investing in a v0.2 with premium features
+- 200+ installs → worth investing in the companion AI-suggestions extension
 - Under 50 installs → rethink pitch or target audience
 
 ---
@@ -196,10 +209,10 @@ Would love feedback!
 
 While waiting for approval, prep these in parallel:
 
-1. **Landing page** — published on the personal site at https://monydevelop.me/ (source: [PAGE.md](PAGE.md))
+1. **Landing page** — published on the personal site at https://monydevelop.me/projects/perf-debugger (source: [PAGE.html](PAGE.html))
 2. **Twitter account** for the project (e.g. @PerfDebuggerApp)
-3. **Public GitHub repo** (open source builds trust)
-4. **v0.2 plan** with premium features
+3. **Public GitHub repo** — done: https://github.com/MonicaAvilaAlcazar/PerfDebugger (MIT)
+4. **AI suggestions extension** — planned as a separate free extension
 
 ---
 
@@ -222,7 +235,7 @@ $0. The Chrome Web Store is free after the $5 one-time fee.
 ## If something goes wrong
 
 - **Rejected:** read the email, fix, resubmit
-- **Bug found post-launch:** push a quick update (v0.1.1)
+- **Bug found post-launch:** bump the version in [manifest.json](manifest.json) (e.g. 1.0.1), rerun `./scripts/publish.sh`, and upload the new zip
 - **Stuck:** come back here and ask — happy to help
 
 ---
